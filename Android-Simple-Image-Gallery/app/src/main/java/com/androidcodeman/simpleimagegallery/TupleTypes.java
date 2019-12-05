@@ -42,10 +42,23 @@ final public class TupleTypes {
         }
     }
 
+    public class TupStrLong extends Tuple<String, Long> {
+        public TupStrLong(String first, long second) {
+            super(first, second);
+        }
+    }
+
     public class StrIntComp implements Comparator<TupStrInt> {
         @Override
         public int compare(TupStrInt o1, TupStrInt o2) {
             return o1.getSecond() - o2.getSecond();
+        }
+    }
+
+    public class StrLongComp implements Comparator<TupStrLong> {
+        @Override
+        public int compare(TupStrLong o1, TupStrLong o2) {
+            return (int)(o1.getSecond() - o2.getSecond());
         }
     }
 }

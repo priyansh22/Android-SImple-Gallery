@@ -1,14 +1,11 @@
-package com.androidcodeman.simpleimagegallery;//package com.example.dbentrysearch.db;
+package com.androidcodeman.simpleimagegallery;
 
-
-import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-import com.androidcodeman.simpleimagegallery.TupleTypes.TupStrInt;
-import com.androidcodeman.simpleimagegallery.TupleTypes.TupStrStr;
+import com.androidcodeman.simpleimagegallery.TupleTypes.TupStrLong;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -24,7 +21,8 @@ public class DBHandler extends SQLiteOpenHelper {
     private static final String TABLE_NAME = "image_contents";
     private static final String URI = "uri";
     private static final String TIMESTAMP = "timestamp";
-    private static final String CONTENTS = "contents";
+    private static final String LABEL = "label";
+    private static final String CONFIDENCE = "confidence";
     private TupleTypes tuples = new TupleTypes();
 
     public DBHandler(Context context) {
@@ -34,7 +32,8 @@ public class DBHandler extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         String CREATE_TABLE = "CREATE TABLE " + TABLE_NAME + "("
-                + URI + " TEXT PRIMARY KEY NOT NULL," + CONTENTS + " TEXT,"
+                + URI + " TEXT," + LABEL + " TEXT,"
+                + CONFIDENCE + " INTEGER,"
                 + TIMESTAMP + " INTEGER" + ")";
         db.execSQL(CREATE_TABLE);
     }
@@ -45,71 +44,95 @@ public class DBHandler extends SQLiteOpenHelper {
         onCreate(db);
     }
 
+    /**
+     * Method to truncate all the previous entries from DB.
+     */
     public void truncateOldEntries() {
         SQLiteDatabase db = this.getWritableDatabase();
         db.execSQL("DELETE FROM " + TABLE_NAME);
     }
 
     /**
-     * Method to add entry of meta-data of an image into the db.
+     * Method to insert meta-information about an image
+     * from ML model into in the DB
      *
-     * @param uri       Image uri on the device
-     * @param contents  List of contents available in the image
-     * @param timestamp Nano-second from epoch
+     * @param uri URI of the image
+     * @param labels labels recognized by the ML models.
+     * @param confidence Confidence score of the ML models
+     *                   for the given label.
+     * @param timestamp Timestamp of the images.
      */
-    public void addImageMeta(String uri, List<String> contents, Long timestamp) {
+    public void addImageMeta(String uri, List<String> labels,
+                             List<Double> confidence, Long timestamp) {
         SQLiteDatabase db = this.getWritableDatabase();
-        StringBuilder contentBuilder = new StringBuilder();
-        for (String s : contents) {
-            contentBuilder.append(s.trim().toLowerCase());
+        String colNames = " (" + URI + "," + LABEL + ","
+                + CONFIDENCE + "," + TIMESTAMP + ")";
+        StringBuilder insertQuery = new StringBuilder(
+                "INSERT INTO " + TABLE_NAME + colNames + " VALUES "
+        );
+        for (int i = 0; i < labels.size(); i++) {
+            int scaledConfidence = (int) (10000 * confidence.get(i));
+            if (i == 0) {
+                insertQuery.append(
+                        String.format("(%s,%s,%s,%s)",
+                                uri, labels.get(i).toLowerCase().trim(),
+                                Integer.toString(scaledConfidence),
+                                Long.toString(timestamp))
+                );
+            } else {
+                insertQuery.append(
+                        String.format(",(%s,%s,%s,%s)",
+                                uri, labels.get(i), Integer.toString(scaledConfidence),
+                                Long.toString(timestamp))
+                );
+            }
         }
-        String contentStr = contentBuilder.toString();
-        ContentValues values = new ContentValues();
-        String checkQuery = "SELECT " + CONTENTS + " FROM " + TABLE_NAME +
-                " WHERE URI = '" + uri + "'";
-        Cursor cursor = db.rawQuery(checkQuery, null);
-        if (cursor.getCount() > 0) {
-            cursor.moveToNext();
-            String oldValue = cursor.getString(0);
-            values.put(CONTENTS, oldValue + " " + contentStr);
-            db.update(TABLE_NAME, values, URI + "='" + uri + "'", null);
-        } else {
-            values.put(URI, uri);
-            values.put(CONTENTS, contentStr);
-            values.put(TIMESTAMP, timestamp);
-            db.insert(TABLE_NAME, null, values);
-        }
+        Cursor cursor = db.rawQuery(insertQuery.toString(), null);
         cursor.close();
         db.close();
     }
 
+    /**
+     * Method to get the URI of all the images matching the query.
+     *
+     * @param query String to search the labels of the images.
+     * @return List of URIs in string format.
+     */
     public ArrayList<String> getImages(String query) {
-        ArrayList<TupStrStr> dbRes = getAllMatching(query);
-        return rankImages(dbRes, query);
+        ArrayList<TupStrLong> dbRes = getAllMatching(query);
+        return orderImages(dbRes);
     }
 
-    private ArrayList<TupStrStr> getAllMatching(String query) {
-        ArrayList<TupStrStr> res = new ArrayList<>();
-        String[] qs = query.trim().split("\\s");
+    /**
+     * Method to query DB for the labels matching the query
+     *
+     * @param query String to search the labels of the images.
+     * @return Tuple of image URI with a score
+     */
+    private ArrayList<TupStrLong> getAllMatching(String query) {
+        ArrayList<TupStrLong> res = new ArrayList<>();
+        String[] qs = query.toLowerCase().trim().split("\\s");
 
         StringBuilder dbQuery = new StringBuilder(
-                "SELECT " + URI + ", " + CONTENTS +
-                        " FROM " + TABLE_NAME + " WHERE " +
-                        CONTENTS + " LIKE '%" + qs[0].trim() + "%'"
+                "SELECT " + URI + ", " + "SUM(" + CONFIDENCE + ") AS score"
+                        + " FROM " + TABLE_NAME + " WHERE "
+                        + LABEL + " LIKE '%" + qs[0].trim() + "%'"
         );
         String[] nqs = Arrays.copyOfRange(qs, 1, qs.length);
         for (String q : nqs) {
-            String additionalCondition = " OR " + CONTENTS + " LIKE '%" + q.trim() + "%'";
+            String additionalCondition = " OR " + LABEL + " LIKE '%" + q.trim() + "%'";
             dbQuery.append(additionalCondition);
         }
+        String aggregation = " GROUP BY " + URI;
+        dbQuery.append(aggregation);
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery(dbQuery.toString(), null);
 
         while (cursor.moveToNext()) {
             res.add(
-                    tuples.new TupStrStr(
+                    tuples.new TupStrLong(
                             cursor.getString(0),
-                            cursor.getString(1)
+                            cursor.getLong(1)
                     )
             );
         }
@@ -117,26 +140,17 @@ public class DBHandler extends SQLiteOpenHelper {
         return res;
     }
 
-    private ArrayList<String> rankImages(ArrayList<TupStrStr> inArr,
-                                         String query) {
+    private ArrayList<String> orderImages(ArrayList<TupStrLong> inArr) {
         ArrayList<String> res = new ArrayList<>();
         int inSize = inArr.size();
-        String[] qs = query.toLowerCase().trim().split("\\s");
-        TupStrInt[] values = new TupStrInt[inSize];
-        int tempCount = 0;
+        TupStrLong[] values = new TupStrLong[inSize];
         for (int i = 0; i < inSize; i++) {
-            String curr = inArr.get(i).getSecond();
-            tempCount = 0;
-            for (String q : qs) {
-                if (curr.contains(q))
-                    tempCount += 1;
-            }
-//            values[i].setFirst(inArr.get(i).getFirst());
-//            values[i].setSecond(tempCount);
-            values[i] = tuples.new TupStrInt(inArr.get(i).getFirst(), tempCount);
+            values[i] = tuples.new TupStrLong(
+                    inArr.get(i).getFirst(), inArr.get(i).getSecond()
+            );
         }
-        Arrays.sort(values, tuples.new StrIntComp());
-        for (TupStrInt e : values) {
+        Arrays.sort(values, tuples.new StrLongComp());
+        for (TupStrLong e : values) {
             res.add(e.getFirst());
         }
         return res;
