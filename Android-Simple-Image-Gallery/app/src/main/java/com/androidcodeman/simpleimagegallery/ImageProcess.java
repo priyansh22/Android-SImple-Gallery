@@ -52,6 +52,7 @@ import java.util.ArrayList;
 import java.util.List;
 import android.os.Environment;
 import java.io.File;
+import java.util.Random;
 
 
 public class ImageProcess {
@@ -73,6 +74,8 @@ this.context=context;
         try {
             dbHandler.truncateOldEntries();
             final List<String>labelstextlist=new ArrayList<String>();
+
+
             Result r = new Result(l,labelstextlist);
             r.execute();
 //            Toast.makeText(context, dbHandler.getImages("image.jpg").toString(), Toast.LENGTH_SHORT).show();
@@ -93,6 +96,8 @@ this.context=context;
         {
             // [START set_detector_options]
             final List<String> labelslist = new ArrayList<String>();
+            final List<Double> labelsconfidencelist = new ArrayList<Double>();
+
             FirebaseVisionOnDeviceImageLabelerOptions options =
                     new FirebaseVisionOnDeviceImageLabelerOptions.Builder()
                             .setConfidenceThreshold(0.8f)
@@ -116,15 +121,15 @@ this.context=context;
                                                 labelslist.add(text);
                                                 System.out.println(labelslist+"list in method");
                                                 String entityId = label.getEntityId();
-                                                float confidence = label.getConfidence();
+                                                double confidence = label.getConfidence();
+                                                labelsconfidencelist.add(confidence);
                                                 Toast.makeText(context, "label generated...." + text + "  entity id:" + entityId + "Confidence:" + confidence, Toast.LENGTH_SHORT).show();
 
 
 
                                             }
-
-
-                                            dbHandler.addImageMeta(path1, labelslist, 0L);
+                                            if (!labelslist.isEmpty()&&!labelsconfidencelist.isEmpty()){
+                                            dbHandler.addImageMeta(path1, labelslist, labelsconfidencelist,0L);}
                                         }
 
                                     })
@@ -149,6 +154,7 @@ this.context=context;
         public void  recognizeText(FirebaseVisionImage image, final String path ) {
 
             final List<String> textlist = new ArrayList<String>();
+            final List<Double> textconfidencelist = new ArrayList<Double>();
             FirebaseVisionTextRecognizer detector = FirebaseVision.getInstance()
                     .getOnDeviceTextRecognizer();
             // [END get_detector_default]
@@ -166,9 +172,17 @@ this.context=context;
                                         Rect boundingBox = block.getBoundingBox();
                                         Point[] cornerPoints = block.getCornerPoints();
                                         String text = block.getText();
-                                        Toast.makeText(context, "text generated..." + text, Toast.LENGTH_SHORT).show();
+                                        double conf;
+                                        try{
+                                        conf = block.getConfidence();}
+                                        catch(NullPointerException e)
+                                        {
+                                            conf=0.98;
+                                        }
+                                        Toast.makeText(context, "text generated..." + text+"confidence:"+conf, Toast.LENGTH_SHORT).show();
 //                                        a.concat(text);
                                         textlist.add(text);
+                                        textconfidencelist.add(conf);
                                         for (FirebaseVisionText.Line line : block.getLines()) {
                                             // ...
                                             for (FirebaseVisionText.Element element : line.getElements()) {
@@ -176,7 +190,8 @@ this.context=context;
                                             }
                                         }
                                     }
-                                    dbHandler.addImageMeta(path,textlist,0L);
+                                    if (!textlist.isEmpty()&&!textconfidencelist.isEmpty()){
+                                    dbHandler.addImageMeta(path,textlist,textconfidencelist,0L);}
                                     // [END get_text]
 //                                    return textlist;
                                     // [END_EXCLUDE]
@@ -370,7 +385,7 @@ this.context=context;
             // On most devices, the sensor orientation is 90 degrees, but for some
             // devices it is 270 degrees. For devices with a sensor orientation of
             // 270, rotate the image an additional 180 ((270 + 270) % 360) degrees.
-            CameraManager cameraManager = (CameraManager) context.getSystemService(CAMERA_SERVICE);
+            CameraManager cameraManager = (CameraManager) context.getSystemService(context.CAMERA_SERVICE);
             int sensorOrientation = cameraManager
                     .getCameraCharacteristics(cameraId)
                     .get(CameraCharacteristics.SENSOR_ORIENTATION);

@@ -74,14 +74,14 @@ public class DBHandler extends SQLiteOpenHelper {
             int scaledConfidence = (int) (10000 * confidence.get(i));
             if (i == 0) {
                 insertQuery.append(
-                        String.format("(%s,%s,%s,%s)",
+                        String.format("('%s','%s',%s,%s)",
                                 uri, labels.get(i).toLowerCase().trim(),
                                 Integer.toString(scaledConfidence),
                                 Long.toString(timestamp))
                 );
             } else {
                 insertQuery.append(
-                        String.format(",(%s,%s,%s,%s)",
+                        String.format(",('%s','%s',%s,%s)",
                                 uri, labels.get(i), Integer.toString(scaledConfidence),
                                 Long.toString(timestamp))
                 );
