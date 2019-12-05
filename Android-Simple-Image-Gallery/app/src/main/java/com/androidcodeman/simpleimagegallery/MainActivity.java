@@ -86,8 +86,8 @@ public class MainActivity extends AppCompatActivity implements itemClickListener
 
         Button button = findViewById(R.id.searchButton);
         button.setOnClickListener(new View.OnClickListener(){
-            @Override
             public void onClick(View v) {
+                System.out.println("yes here");
                 EditText text = (EditText)findViewById(R.id.searchEditText);
                 value = text.getText().toString();
                 DBHandler dbhandler = new DBHandler(getApplicationContext());
@@ -159,25 +159,47 @@ public class MainActivity extends AppCompatActivity implements itemClickListener
                 folderpaths = folderpaths+folder+"/";
 
                 if (listimage.size() > 0) {
+
+                    Log.d("Size of listimage", String.valueOf(listimage.size()));
+                    Log.d("Original datapath ", datapath);
+                    datapath = null;
+                    Log.d("PicPaths ", String.valueOf(picPaths));
                     System.out.println("cominh gere");
                     picPaths = listimage;
                     System.out.println(picPaths);
                 }
                 if (!picPaths.contains(folderpaths)) {
                     picPaths.add(folderpaths);
-
+                    Log.d("FOLDER PATHS -", folderpaths);
                     folds.setPath(folderpaths);
                     folds.setFolderName(folder);
-                    folds.setFirstPic(datapath);//if the folder has only one picture this line helps to set it as first so as to avoid blank image in itemview
-                    folds.addpics();
+                    Log.d("FOLDSs", String.valueOf(folds));
+                    if (listimage.size() == 2) {
+                        folds.setFirstPic(String.valueOf(listimage.get(0)));
+                    } else {
+                        folds.setFirstPic(datapath);//if the folder has only one picture this line helps to set it as first so as to avoid blank image in itemview
+                    }
+                        folds.addpics();
                     picFolders.add(folds);
                 }else{
                     for(int i = 0;i<picFolders.size();i++){
                         if(picFolders.get(i).getPath().equals(folderpaths)){
-                            list.add(datapath);
-                            Log.d("PICTURE KA PATH = ", datapath);
-                            picFolders.get(i).setFirstPic(datapath);
-                            picFolders.get(i).addpics();
+                            Log.d("picFolders", String.valueOf(picFolders));
+                            if (listimage.size() > 0) {
+                                datapath = null;
+                                datapath = listimage.get(i);
+                                list.add(datapath);
+                                Log.d("PICTURE KA PATH = ", datapath);
+                                picFolders.get(i).setFirstPic(datapath);
+                                picFolders.get(i).addpics();
+                            } else {
+                                list.add(datapath);
+                                Log.d("PICTURE KA PATH = ", datapath);
+                                picFolders.get(i).setFirstPic(datapath);
+                                picFolders.get(i).addpics();
+                            }
+
+
                         }
                     }
                 }
