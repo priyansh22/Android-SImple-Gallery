@@ -71,6 +71,12 @@ public class DBHandler extends SQLiteOpenHelper {
                 "INSERT INTO " + TABLE_NAME + colNames + " VALUES "
         );
         for (int i = 0; i < labels.size(); i++) {
+
+            System.out.println("Test input: " +          String.format("('%s','%s',%s,%s)",
+                    uri, labels.get(i).toLowerCase().trim(),
+                    Integer.toString(90),
+                    Long.toString(timestamp)));
+
             int scaledConfidence = (int) (10000 * confidence.get(i));
             if (i == 0) {
                 insertQuery.append(
@@ -113,6 +119,8 @@ public class DBHandler extends SQLiteOpenHelper {
         ArrayList<TupStrLong> res = new ArrayList<>();
         String[] qs = query.toLowerCase().trim().split("\\s");
 
+        System.out.println("Test query: " + qs[0].trim());
+
         StringBuilder dbQuery = new StringBuilder(
                 "SELECT " + URI + ", " + "SUM(" + CONFIDENCE + ") AS score"
                         + " FROM " + TABLE_NAME + " WHERE "
@@ -126,9 +134,15 @@ public class DBHandler extends SQLiteOpenHelper {
         String aggregation = " GROUP BY " + URI;
         dbQuery.append(aggregation);
         SQLiteDatabase db = this.getReadableDatabase();
+
+        System.out.println("Query state: " + dbQuery.toString());
+
         Cursor cursor = db.rawQuery(dbQuery.toString(), null);
 
         while (cursor.moveToNext()) {
+
+            System.out.println("Test query 2: " + cursor.getString(0));
+
             res.add(
                     tuples.new TupStrLong(
                             cursor.getString(0),
