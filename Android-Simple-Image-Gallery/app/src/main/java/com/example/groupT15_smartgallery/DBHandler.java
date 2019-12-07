@@ -1,11 +1,11 @@
-package com.androidcodeman.simpleimagegallery;
+package com.example.groupT15_smartgallery;
 
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-import com.androidcodeman.simpleimagegallery.TupleTypes.TupStrLong;
+import com.example.groupT15_smartgallery.TupleTypes.TupStrLong;
 
 import java.util.ArrayList;
 import java.util.Arrays;

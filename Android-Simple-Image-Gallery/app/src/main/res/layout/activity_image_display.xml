@@ -31,7 +31,7 @@
 
         </androidx.cardview.widget.CardView>
 
-        <com.androidcodeman.simpleimagegallery.utils.AutoFitRecyclerView
+        <com.example.groupT15_smartgallery.utils.AutoFitRecyclerView
             android:layout_below="@id/head"
             android:id="@+id/recycler"
             android:layout_width="match_parent"
@@ -46,7 +46,7 @@
             app:fastScrollVerticalThumbDrawable="@drawable/thumb_drawable"
             app:fastScrollVerticalTrackDrawable="@drawable/line_drawable"-->
 
-        </com.androidcodeman.simpleimagegallery.utils.AutoFitRecyclerView>
+        </com.example.groupT15_smartgallery.utils.AutoFitRecyclerView>
 
     </RelativeLayout>
 

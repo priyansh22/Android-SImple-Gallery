@@ -2,11 +2,7 @@
 //
 //public class ImageProcess {
 //}
-package com.androidcodeman.simpleimagegallery;
-
-import androidx.appcompat.app.AppCompatActivity;
-
-import android.os.Bundle;
+package com.example.groupT15_smartgallery;
 
 import android.app.Activity;
 import android.content.Context;
@@ -20,16 +16,13 @@ import android.media.Image;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
-import android.os.Bundle;
 import android.util.Log;
 import android.util.SparseIntArray;
 import android.view.Surface;
-import android.view.View;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
-import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -50,9 +43,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
-import android.os.Environment;
 import java.io.File;
-import java.util.Random;
 
 
 public class ImageProcess {

@@ -1,4 +1,4 @@
-package com.androidcodeman.simpleimagegallery;
+package com.example.groupT15_smartgallery;
 
 import android.content.Context;
 import androidx.test.InstrumentationRegistry;

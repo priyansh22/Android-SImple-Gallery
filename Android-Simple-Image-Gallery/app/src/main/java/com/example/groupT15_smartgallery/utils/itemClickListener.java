@@ -1,4 +1,4 @@
-package com.androidcodeman.simpleimagegallery.utils;
+package com.example.groupT15_smartgallery.utils;
 
 import java.util.ArrayList;
 

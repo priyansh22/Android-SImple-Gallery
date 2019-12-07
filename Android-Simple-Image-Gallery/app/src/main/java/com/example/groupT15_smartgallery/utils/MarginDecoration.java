@@ -1,4 +1,4 @@
-package com.androidcodeman.simpleimagegallery.utils;
+package com.example.groupT15_smartgallery.utils;
 
 import android.content.Context;
 import android.graphics.Rect;
@@ -6,7 +6,7 @@ import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-import com.androidcodeman.simpleimagegallery.R;
+import com.example.groupT15_smartgallery.R;
 
 /**
  * Author CodeBoy722

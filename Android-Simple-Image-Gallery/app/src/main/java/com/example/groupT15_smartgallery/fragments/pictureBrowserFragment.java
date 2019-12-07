@@ -1,4 +1,4 @@
-package com.androidcodeman.simpleimagegallery.fragments;
+package com.example.groupT15_smartgallery.fragments;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -16,10 +16,10 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import com.androidcodeman.simpleimagegallery.R;
-import com.androidcodeman.simpleimagegallery.utils.imageIndicatorListener;
-import com.androidcodeman.simpleimagegallery.utils.pictureFacer;
-import com.androidcodeman.simpleimagegallery.utils.recyclerViewPagerImageIndicator;
+import com.example.groupT15_smartgallery.R;
+import com.example.groupT15_smartgallery.utils.imageIndicatorListener;
+import com.example.groupT15_smartgallery.utils.pictureFacer;
+import com.example.groupT15_smartgallery.utils.recyclerViewPagerImageIndicator;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import java.util.ArrayList;

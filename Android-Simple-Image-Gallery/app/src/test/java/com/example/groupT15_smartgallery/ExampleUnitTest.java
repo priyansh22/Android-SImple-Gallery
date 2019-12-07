@@ -1,4 +1,4 @@
-package com.androidcodeman.simpleimagegallery;
+package com.example.groupT15_smartgallery;
 
 import org.junit.Test;
 
